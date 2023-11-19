@@ -1,0 +1,43 @@
+[
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*"
+        }
+    },
+    {
+        "type": "actions",
+        "elements": [
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "✅ Yes!",
+                    "emoji": true
+                },
+                "value": "click_me_123"
+            },
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "📅 It's scheduled",
+                    "emoji": true
+                },
+                "value": "click_me_123",
+                "url": "https://google.com"
+            },
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "💤 Not yet..",
+                    "emoji": true
+                },
+                "value": "click_me_123",
+                "url": "https://google.com"
+            }
+        ]
+    }
+]
