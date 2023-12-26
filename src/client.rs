@@ -107,10 +107,9 @@ impl<'a> SlackClient<'a> {
         }
     }
 
-    pub async fn post_message(&self, channel_id: &str, text: &str, blocks: Value) -> Result<()> {
+    pub async fn post_message(&self, channel_id: &str, blocks: Value) -> Result<()> {
         let mut parameters = HashMap::new();
         parameters.insert("channel", channel_id);
-        parameters.insert("text", text);
         let blocks_str = serde_json::to_string(&blocks).unwrap();
         parameters.insert("blocks", blocks_str.as_str());
 

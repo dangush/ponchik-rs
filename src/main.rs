@@ -49,7 +49,7 @@ async fn main() {
 async fn set_up_meetings(channel_id: &str, mut client: SlackClient<'_>) -> Result<()> {
 
     let mut users = client.members_of_channel(channel_id).await?;
-    let user_partitions = random_partition(&mut users, 4);
+    let user_partitions = random_partition(&mut users, 2);
 
     // TODO: unwrap 
     let blocks_json_str = fs::read_to_string("src/data/introduction_block.json").await.unwrap();
@@ -65,18 +65,19 @@ async fn set_up_meetings(channel_id: &str, mut client: SlackClient<'_>) -> Resul
                                      
         // println!("Created a DM with {:?}", identity_vec);
         export.push(identity_vec);
+        println!("{}", blocks_json_str);
 
         // Create message
         let mut message = blocks_json_str.replace("channel", channel_id);
         message = message.replace("userid1", partition[0].as_str());
         message = message.replace("userid2", partition[1].as_str());
 
-        let blocks: serde_json::Value = serde_json::from_str(&blocks_json_str)?;
+        let blocks: serde_json::Value = serde_json::from_str(&message)?;
 
         let channel_id = client.start_direct_message(partition).await?;
         // dbg!(&channel_id);
 
-        client.post_message(&channel_id, &message, blocks).await?;
+        client.post_message(&channel_id, blocks).await?;
     }
 
     // println!("total: {:?}", export);
@@ -85,10 +86,15 @@ async fn set_up_meetings(channel_id: &str, mut client: SlackClient<'_>) -> Resul
     Ok(())
 }
 
-async fn send_midpoint_checkins(_client: SlackClient<'_>) -> Result<()> {
+async fn send_midpoint_checkins(client: SlackClient<'_>) -> Result<()> {
     // TODO: Read from google sheets db and decide what actions to perform
-    let time = read_entry().await?;
-    println!("{:?}", time);
+    // let time = read_entry().await?;
+    // println!("{:?}", time);
+
+    let blocks_json_str = fs::read_to_string("src/data/midpoint_block.json").await.unwrap();
+    let blocks: serde_json::Value = serde_json::from_str(&blocks_json_str)?;
+
+    client.post_message(dotenv::var("CHANNEL_ID").unwrap().as_str(), blocks).await?;
 
     Ok(())
 }

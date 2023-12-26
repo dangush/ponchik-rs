@@ -4,43 +4,6 @@
         "text": {
             "type": "mrkdwn",
             "text": ":wave: <@userid1>, <@userid2>.\n\n It's time to get to know your teammates better! Donut intros people in <#channel> every 2 weeks. \n\n Now that you're here, schedule a time to meet for coffee :coffee:, lunch :sandwich:, or donuts :doughnut:!"
-        },
-        "accessory": {
-            "type": "overflow",
-            "options": [
-                {
-                    "text": {
-                        "type": "plain_text",
-                        "emoji": true,
-                        "text": "Option One"
-                    },
-                    "value": "value-0"
-                },
-                {
-                    "text": {
-                        "type": "plain_text",
-                        "emoji": true,
-                        "text": "Option Two"
-                    },
-                    "value": "value-1"
-                },
-                {
-                    "text": {
-                        "type": "plain_text",
-                        "emoji": true,
-                        "text": "Option Three"
-                    },
-                    "value": "value-2"
-                },
-                {
-                    "text": {
-                        "type": "plain_text",
-                        "emoji": true,
-                        "text": "Option Four"
-                    },
-                    "value": "value-3"
-                }
-            ]
         }
     }
 ]

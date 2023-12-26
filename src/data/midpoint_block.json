@@ -16,7 +16,7 @@
                     "text": "✅ Yes!",
                     "emoji": true
                 },
-                "value": "click_me_123"
+                "value": "yes"
             },
             {
                 "type": "button",
@@ -25,8 +25,7 @@
                     "text": "📅 It's scheduled",
                     "emoji": true
                 },
-                "value": "click_me_123",
-                "url": "https://google.com"
+                "value": "scheduled"
             },
             {
                 "type": "button",
@@ -35,8 +34,7 @@
                     "text": "💤 Not yet..",
                     "emoji": true
                 },
-                "value": "click_me_123",
-                "url": "https://google.com"
+                "value": "no"
             }
         ]
     }
