@@ -1,0 +1,6 @@
+target/
+
+.env
+
+priv_key.json
+

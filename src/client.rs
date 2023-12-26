@@ -2,10 +2,13 @@ use std::{borrow::Borrow, collections::HashMap};
 
 use reqwest::Url;
 use serde_json::Value;
+use std::env;
 
 use crate::error::{Error, Result};
 use crate::method::Method;
 
+// TODO: Get rid of user_map
+// TODO: Actually nevermind lmao get rid of this entire thing, I never reuse my http connections anyway
 pub struct SlackClient<'a> {
     api_key: &'a str,
     http_client: reqwest::Client,
@@ -57,7 +60,7 @@ impl<'a> SlackClient<'a> {
         // TODO: avoid these clone() calls
         // TODO: figure out a way to handle userid mapping that doesn't require burst api calls every time. Maybe store in DB
         let mut userid_array: Vec<String> = response["members"].as_array().unwrap().iter().map(|v| v.as_str().unwrap().to_string()).collect();
-        userid_array.retain(|user_id| user_id != &dotenv::var("BOT_ID").unwrap());
+        userid_array.retain(|user_id| user_id != &env::var("BOT_ID").unwrap());
 
         // for userid in userid_array.clone() {
         //     let user_name = self.userid_to_identity(&userid).await;

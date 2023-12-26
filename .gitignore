@@ -2,3 +2,6 @@
 
 priv_key.json
 .env
+.vercel
+
+.DS_Store
