@@ -89,7 +89,7 @@ impl<'a> SlackClient<'a> {
         }
     }
 
-    pub async fn start_direct_message(&self, users: Vec<String>) -> Result<String> {
+    pub async fn start_direct_message(&self, users: &Vec<String>) -> Result<String> {
         let users = users.join(",");
         let mut parameters = HashMap::new();
         parameters.insert("users", &*users);
@@ -110,7 +110,7 @@ impl<'a> SlackClient<'a> {
         }
     }
 
-    pub async fn post_message(&self, channel_id: &str, blocks: Value) -> Result<()> {
+    pub async fn post_message(&self, channel_id: &str, blocks: &Value) -> Result<()> {
         let mut parameters = HashMap::new();
         parameters.insert("channel", channel_id);
         let blocks_str = serde_json::to_string(&blocks).unwrap();

@@ -1,27 +1,25 @@
-# Ponchik Donut App
+# Ponchik 🍩
 
-A blazing fast slack donut app clone written in Rust.
+A ⚡ blazing fast ⚡ slack donut app clone written in Rust 🦀
 
-## Functionality
+Ponchik helps integrate members of your team. Add Ponchik to a channel, and it will randomly pair individuals in the channel to be introduced in DMs. 
 
-When ran, Ponchik will generate a list of pairs of members of a slack channel. It will make those introductions in Slack DMs, and record the pairs on a Google Sheet. 
+## Docs
 
-## Lifecycle
+Ponchik is deployed as a set of Vercel Functions built on the community-driven [Vercel Runtime for Rust](https://github.com/vercel-community/rust). Vercel Function invokations (or a command line interface) can be used to invoke stages of the pairing cycle, including making the introduction, sending checkpoints, and closing.
 
-- Monday send out pairings
-- Friday midpoint checkin
-- Next Friday result survey
+Pairings and their statuses are recorded in a PostgreSQL database using the sqlx PostgreSQL driver.
 
-Bot checks a google sheet cell to check time, chooses one of 3 paths as a result. 
+The Slack API is used to send Block Kit messages and handle user interaction.
 
 ## Todos
 - [ ] Backend
     - [x] Ensure sqlx and postgres works in the vercel runtime
-    - [ ] Write pairings to database at intros generation
-    - [ ] Read active pairings from db and send midpoint checkins
-    - [ ] update db from user interactions
+    - [x] Write pairings to database at intros generation
+    - [x] Read active pairings from db and send midpoint checkins
+    - [x] update db from user interactions
     - [ ] update db at pair close
-    - [ ] if sqlx and postgress doesnt work then im either turning this into some middlewware with a js implementation powering the db connection, or writing a rust database library for google sheets
+    - [x] if sqlx and postgresql doesnt work then im either turning this into some middlewware with a js implementation powering the db connection, or writing a rust database library for google sheets
 - [ ] Application 
     - [ ] Update pairing algo to prevent duplicate pairings
     - [ ] Update intro_launch endpoint to accept arguments for group size
@@ -30,6 +28,8 @@ Bot checks a google sheet cell to check time, chooses one of 3 paths as a result
     - [ ] set up jaegar / frontend for logs 
 - [ ] Front end 
     - [ ] Create slack-authenticated frontend which displays db contents and can be used to interact with app
+- [ ] Misc
+    - [ ] lint everything, get rid of sheets stuff, probably move MeetingStatus struct to another module
 
 ### DB Table
 group channel id | meeting status | date of intro | names...

@@ -1,3 +1,4 @@
+use ponchik::db;
 use serde_json::Value;
 use serde::{Deserialize, Serialize};
 use vercel_runtime::{
@@ -38,6 +39,7 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
                         if let Some(actions) = json_value.get("actions") {
                             let action_val = actions[0].get("value").unwrap();
                             let user_id = &json_value["user"]["id"].as_str().unwrap();
+                            let channel_id = &json_value["channel"]["id"].as_str().unwrap();
                             println!("ACTION VALUE: {}", action_val);
                             
                             let mut map = HashMap::new();
@@ -48,7 +50,11 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
                                     map.insert("text", 
                                     format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n
                                     ✅ <@{}> said that you've met!", user_id));
-        
+                                    
+
+                                    let pool = db::db_init().await?;
+                                    db::db_update_status(&pool, channel_id.to_string(), db::MeetingStatus::Closed(db::FinalStatus::Met)).await?;
+
                                     let _res = reqwest::Client::new().post(response_url.as_str().unwrap())
                                         .json(&map)
                                         .send()
@@ -59,6 +65,8 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
                                     format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n
                                     *:C* <@{}> said that you have not scheduled yet.", user_id));
         
+                                    // TODO: not sure what to make of this status yet
+
                                     let _res = reqwest::Client::new().post(response_url.as_str().unwrap())
                                         .json(&map)
                                         .send()
@@ -70,6 +78,9 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
                                     format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n 
                                     📅 <@{}> said that your meeting is scheduled!", user_id));
         
+                                    let pool = db::db_init().await?;
+                                    db::db_update_status(&pool, channel_id.to_string(), db::MeetingStatus::Scheduled).await?;
+
                                     let _res = reqwest::Client::new().post(response_url.as_str().unwrap())
                                         .json(&map)
                                         .send()

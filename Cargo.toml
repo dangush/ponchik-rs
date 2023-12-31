@@ -30,3 +30,7 @@ path = "api/midpoint_launch.rs"
 [[bin]]
 name = "interact_handler"
 path = "api/interact_handler.rs"
+
+[[bin]]
+name = "intro_launcher"
+path = "api/intro_launcher.rs"

@@ -5,10 +5,10 @@ use std::env;
 
 #[derive(Debug, FromRow)]
 pub struct Pairing {
-	group_channel_id: String,
-	date_of_intro: String,
-    meeting_status: MeetingStatus,
-    names: Vec<String>
+	pub group_channel_id: String,
+	pub date_of_intro: String,
+    pub meeting_status: MeetingStatus,
+    pub names: Vec<String>
 }
 
 #[derive(Debug)]
@@ -81,7 +81,7 @@ pub async fn db_init() -> Result<sqlx::Pool<Postgres>, sqlx::Error> {
     Ok(pool)
 }
 
-pub async fn db_insert_pairings(pool: sqlx::Pool<Postgres>, pairings: Vec<Pairing>) -> Result<(), sqlx::Error> {
+pub async fn db_insert_list(pool: &sqlx::Pool<Postgres>, pairings: Vec<Pairing>) -> Result<(), sqlx::Error> {
     // let test_pair = Pairing { group_channel_id: "U2123".to_string(), date_of_intro: "19-2-23".to_string(), meeting_status: MeetingStatus::Open, names: vec!["dan".to_string(), "gurnoor".to_string()] };
     
     for pairing in pairings {
@@ -90,7 +90,7 @@ pub async fn db_insert_pairings(pool: sqlx::Pool<Postgres>, pairings: Vec<Pairin
         .bind(pairing.meeting_status)
         .bind(pairing.date_of_intro)
         .bind(pairing.names) // sus unwrap
-        .execute(&pool)
+        .execute(pool)
         .await?;
 
     }
@@ -98,20 +98,47 @@ pub async fn db_insert_pairings(pool: sqlx::Pool<Postgres>, pairings: Vec<Pairin
     Ok(())
 }
 
-pub async fn db_read_by_groupid(pool: sqlx::Pool<Postgres>, channel_id: String) -> Result<Pairing, sqlx::Error> {
+pub async fn db_insert_single(pool: &sqlx::Pool<Postgres>, pairing: Pairing) -> Result<(), sqlx::Error> {
+    // let test_pair = Pairing { group_channel_id: "U2123".to_string(), date_of_intro: "19-2-23".to_string(), meeting_status: MeetingStatus::Open, names: vec!["dan".to_string(), "gurnoor".to_string()] };
+
+    sqlx::query("INSERT INTO ponchiks (group_channel_id, meeting_status, date_of_intro, names) VALUES ($1, $2, $3, $4)")
+        .bind(pairing.group_channel_id)
+        .bind(pairing.meeting_status)
+        .bind(pairing.date_of_intro)
+        .bind(pairing.names) // sus unwrap
+        .execute(pool)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn db_read_by_groupid(pool: &sqlx::Pool<Postgres>, channel_id: String) -> Result<Pairing, sqlx::Error> {
     let select_query = 
         sqlx::query_as::<_, Pairing>("SELECT * FROM ponchiks WHERE group_channel_id = ($1)")
         .bind(channel_id);
-    let pairing: Pairing = select_query.fetch_one(&pool).await?;
+
+    let pairing: Pairing = select_query.fetch_one(pool).await?;
 
     Ok(pairing)
 }
 
-pub async fn db_find_all_open(pool: sqlx::Pool<Postgres>) -> Result<Vec<Pairing>, sqlx::Error> {
+pub async fn db_find_all_status(pool: &sqlx::Pool<Postgres>, status: MeetingStatus) -> Result<Vec<Pairing>, sqlx::Error> {
     let select_query = 
         sqlx::query_as::<_, Pairing>("SELECT * FROM ponchiks WHERE meeting_status = ($1)")
-        .bind(MeetingStatus::Open);
-    let pairings: Vec<Pairing> = select_query.fetch_all(&pool).await?;
+        .bind(status);
+
+    let pairings: Vec<Pairing> = select_query.fetch_all(pool).await?;
 
     Ok(pairings)
+}
+
+// TODO: consider checking old status before updating
+pub async fn db_update_status(pool: &sqlx::Pool<Postgres>, channel_id: String, new_status: MeetingStatus) -> Result<(), sqlx::Error> {
+    sqlx::query("UPDATE ponchiks SET meeting_status = $1 WHERE group_channel_id = $2")
+        .bind(new_status)
+        .bind(channel_id)
+        .execute(pool)
+        .await?;
+
+    Ok(())
 }

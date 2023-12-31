@@ -16,7 +16,7 @@ async fn main() {
     match args[1].as_str() {
         "new-pairings" => {
             // TODO: add size of group / number of groups argument
-            match set_up_meetings(env::var("CHANNEL_ID").unwrap().as_str()).await {
+            match set_up_meetings().await {
                 Err(e) => println!("Setting up meetings failed: {:?}", e),
                 _ => ()
             }
@@ -30,7 +30,16 @@ async fn main() {
         "db" => {
             let pool = db::db_init().await.unwrap();
 
-            let pairings = db::db_find_all_open(pool).await.unwrap();
+            let pairings = db::db_find_all_status(&pool, db::MeetingStatus::Open).await.unwrap();
+
+            for pair in pairings {
+                match db::db_update_status(&pool, pair.group_channel_id, db::MeetingStatus::Scheduled).await {
+                    Err(e) => println!("Error: {}", e),
+                    _ => ()
+                }
+            }
+
+            let pairings = db::db_find_all_status(&pool, db::MeetingStatus::Scheduled).await.unwrap();
 
             println!("{:?}", pairings);
 
