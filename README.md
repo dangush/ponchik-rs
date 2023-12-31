@@ -15,16 +15,23 @@ When ran, Ponchik will generate a list of pairs of members of a slack channel. I
 Bot checks a google sheet cell to check time, chooses one of 3 paths as a result. 
 
 ## Todos
-- [x] Get group making with real names running
-- [x] Google Sheets integration
-- [ ] Refactor: fix all warnings and shortcut approaches to borrow checker
-- [ ] Refactor: Restructure trait, functions, and module format. Add env vars
-    - [x] Integrate user profile structs & find better solution for storing that info
-- [ ] DMs user input response handling
-    - [ ] Write slack blocks for it
-    - [ ] Figure out how to set up server to handle responses
-    - [ ] update survey message after receing a message
-- [ ] Design app lifecyle & sending updates
-- [ ] Figure out app hosting solution
-- [ ] Update set making to prevent duplicates (bloom filter / google query)
-- [ ] calculate which cells to edit to make it possible to keep track of additional information regaridng pairings 
+- [ ] Backend
+    - [x] Ensure sqlx and postgres works in the vercel runtime
+    - [ ] Write pairings to database at intros generation
+    - [ ] Read active pairings from db and send midpoint checkins
+    - [ ] update db from user interactions
+    - [ ] update db at pair close
+    - [ ] if sqlx and postgress doesnt work then im either turning this into some middlewware with a js implementation powering the db connection, or writing a rust database library for google sheets
+- [ ] Application 
+    - [ ] Update pairing algo to prevent duplicate pairings
+    - [ ] Update intro_launch endpoint to accept arguments for group size
+    - [ ] start a requested feature list. potentially include block lists, meeting schedule adjuster, multiple midpoint checkins,
+    - [ ] Implement tracing 
+    - [ ] set up jaegar / frontend for logs 
+- [ ] Front end 
+    - [ ] Create slack-authenticated frontend which displays db contents and can be used to interact with app
+
+### DB Table
+group channel id | meeting status | date of intro | names...
+
+meeting_status = {open, scheduled, closed_met, closed_no, closed_scheduled, closed_stale}

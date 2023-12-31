@@ -11,10 +11,13 @@ mod method;
 mod partition;
 mod sheetsdb;
 mod data;
+pub mod db;
 
 use crate::partition::random_partition;
 
 pub async fn set_up_meetings(channel_id: &str) -> Result<()> {
+    dotenv::dotenv().ok();
+    
     let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
     let mut client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
 
@@ -53,6 +56,7 @@ pub async fn set_up_meetings(channel_id: &str) -> Result<()> {
 }
 
 pub async fn send_midpoint_checkins() -> Result<()> {
+    dotenv::dotenv().ok();
     // TODO: read from db
 
     let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());

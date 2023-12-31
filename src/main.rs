@@ -1,4 +1,4 @@
-use ponchik::{set_up_meetings, send_midpoint_checkins};
+use ponchik::{set_up_meetings, send_midpoint_checkins, db};
 use std::env;
 
 #[tokio::main]
@@ -26,6 +26,14 @@ async fn main() {
                 Err(e) => println!("Failed to make midpoint checkins: {:?}", e),
                 _ => ()
             }
+        }
+        "db" => {
+            let pool = db::db_init().await.unwrap();
+
+            let pairings = db::db_find_all_open(pool).await.unwrap();
+
+            println!("{:?}", pairings);
+
         }
         _ => panic!()
     }
