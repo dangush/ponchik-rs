@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use vercel_runtime::{run, Body, Error,
     Request, Response, StatusCode,
 };
-use tracing::{event, span, Level, instrument};
+
+use tracing::instrument;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -25,7 +26,7 @@ pub struct APIError {
 #[instrument]
 pub async fn handler(_req: Request) -> Result<Response<Body>, Error> {
 
-    ponchik::set_up_meetings().await;
+    let _ = ponchik::send_closing_survey().await;
 
     Ok(Response::builder()
     .status(StatusCode::OK)

@@ -13,6 +13,8 @@ async fn main() {
     // let oauth_token: String = String::from(dotenv::var("OAUTH_TOKEN").unwrap());
     // let client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
 
+    tracing_subscriber::fmt::init();
+
     match args[1].as_str() {
         "new-pairings" => {
             // TODO: add size of group / number of groups argument

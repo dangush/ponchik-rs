@@ -18,19 +18,25 @@ dotenv = {version = "*"}
 chrono = {version = "*"}
 anyhow = "*"
 vercel_runtime = { version = "1.1.0" }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
 
 
 [lib]
 path = "src/lib.rs"
 
 [[bin]]
+name = "intro_launcher"
+path = "api/intro_launcher.rs"
+
+[[bin]]
 name = "midpoint_launch"
 path = "api/midpoint_launch.rs"
 
 [[bin]]
-name = "interact_handler"
-path = "api/interact_handler.rs"
+name = "closing_launch"
+path = "api/closing_launch.rs"
 
 [[bin]]
-name = "intro_launcher"
-path = "api/intro_launcher.rs"
+name = "interact_handler"
+path = "api/interact_handler.rs"

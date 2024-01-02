@@ -3,6 +3,9 @@ use sqlx::{FromRow, Row};
 use sqlx::{Encode, Decode, Postgres};
 use std::env;
 
+use tracing_subscriber;
+use tracing::{event, span, Level, instrument};
+
 #[derive(Debug, FromRow)]
 pub struct Pairing {
 	pub group_channel_id: String,
@@ -70,6 +73,7 @@ impl<'q> Encode<'q, Postgres> for MeetingStatus {
     }
 }
 
+#[instrument]
 pub async fn db_init() -> Result<sqlx::Pool<Postgres>, sqlx::Error> {
     dotenv::dotenv().ok();
 
@@ -81,6 +85,7 @@ pub async fn db_init() -> Result<sqlx::Pool<Postgres>, sqlx::Error> {
     Ok(pool)
 }
 
+#[instrument]
 pub async fn db_insert_list(pool: &sqlx::Pool<Postgres>, pairings: Vec<Pairing>) -> Result<(), sqlx::Error> {
     // let test_pair = Pairing { group_channel_id: "U2123".to_string(), date_of_intro: "19-2-23".to_string(), meeting_status: MeetingStatus::Open, names: vec!["dan".to_string(), "gurnoor".to_string()] };
     
@@ -98,6 +103,7 @@ pub async fn db_insert_list(pool: &sqlx::Pool<Postgres>, pairings: Vec<Pairing>)
     Ok(())
 }
 
+#[instrument]
 pub async fn db_insert_single(pool: &sqlx::Pool<Postgres>, pairing: Pairing) -> Result<(), sqlx::Error> {
     // let test_pair = Pairing { group_channel_id: "U2123".to_string(), date_of_intro: "19-2-23".to_string(), meeting_status: MeetingStatus::Open, names: vec!["dan".to_string(), "gurnoor".to_string()] };
 
@@ -112,6 +118,7 @@ pub async fn db_insert_single(pool: &sqlx::Pool<Postgres>, pairing: Pairing) -> 
     Ok(())
 }
 
+#[instrument]
 pub async fn db_read_by_groupid(pool: &sqlx::Pool<Postgres>, channel_id: String) -> Result<Pairing, sqlx::Error> {
     let select_query = 
         sqlx::query_as::<_, Pairing>("SELECT * FROM ponchiks WHERE group_channel_id = ($1)")
@@ -122,6 +129,7 @@ pub async fn db_read_by_groupid(pool: &sqlx::Pool<Postgres>, channel_id: String)
     Ok(pairing)
 }
 
+#[instrument]
 pub async fn db_find_all_status(pool: &sqlx::Pool<Postgres>, status: MeetingStatus) -> Result<Vec<Pairing>, sqlx::Error> {
     let select_query = 
         sqlx::query_as::<_, Pairing>("SELECT * FROM ponchiks WHERE meeting_status = ($1)")
@@ -132,7 +140,57 @@ pub async fn db_find_all_status(pool: &sqlx::Pool<Postgres>, status: MeetingStat
     Ok(pairings)
 }
 
+#[instrument]
+pub async fn db_find_all_status2(pool: &sqlx::Pool<Postgres>, status1: MeetingStatus, status2: MeetingStatus) -> Result<Vec<Pairing>, sqlx::Error> {
+    let select_query = 
+        sqlx::query_as::<_, Pairing>("SELECT * FROM ponchiks WHERE meeting_status = ($1) OR meeting_status = ($2)")
+        .bind(status1)
+        .bind(status2);
+
+    let pairings: Vec<Pairing> = select_query.fetch_all(pool).await?;
+
+    Ok(pairings)
+}
+
+// Nevermind I'm not using this function lmao there's no way it's preferable to just some code duplication
+// #[instrument]
+// pub async fn db_find_all_statuses(pool: &sqlx::Pool<Postgres>, statuses: Vec<MeetingStatus>) -> Result<Vec<Pairing>, sqlx::Error> {
+//     if statuses.is_empty() {
+//         event!(Level::DEBUG, "Empty vector of statuses inputted!");
+//         return Ok(Vec::new());
+//     }
+
+//     /*
+//      * Build a string which chains OR conditions of meeting statuses
+//      * meeting_status = ($1) = 21 characters
+//      * [ OR ] = 4 characters
+//      */
+//     let mut query_string = String::with_capacity((29 + (statuses.len() * 21) + ((statuses.len() - 1) * 4))); // Adjust the capacity based on your expected query size
+//     query_string.push_str("SELECT * FROM ponchiks WHERE ");
+
+
+//     for (index, _) in statuses.iter().enumerate() {
+//         if index > 0 {
+//             query_string.push_str(" OR ");
+//         }
+//         query_string.push_str("meeting_status = $");
+//         query_string.push_str(&(index + 1).to_string());
+//     }
+
+//     let mut select_query = sqlx::query_as::<_, Pairing>(&query_string);
+
+//     for status in statuses {
+//         select_query = select_query.bind(status);
+//     }
+
+//     let pairings: Vec<Pairing> = select_query.fetch_all(pool).await?;
+
+//     Ok(pairings)
+// }
+
+
 // TODO: consider checking old status before updating
+#[instrument]
 pub async fn db_update_status(pool: &sqlx::Pool<Postgres>, channel_id: String, new_status: MeetingStatus) -> Result<(), sqlx::Error> {
     sqlx::query("UPDATE ponchiks SET meeting_status = $1 WHERE group_channel_id = $2")
         .bind(new_status)

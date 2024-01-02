@@ -7,8 +7,12 @@ use std::env;
 use crate::error::{Error, Result};
 use crate::method::Method;
 
+use tracing_subscriber;
+use tracing::{event, span, Level, instrument};
+
 // TODO: Get rid of user_map
 // TODO: Actually nevermind lmao get rid of this entire thing, I never reuse my http connections anyway
+#[derive(Debug)]
 pub struct SlackClient<'a> {
     api_key: &'a str,
     http_client: reqwest::Client,
@@ -25,9 +29,10 @@ impl<'a> SlackClient<'a> {
     }
 
     // todo: error treatment
+    #[instrument]
     pub async fn send<P, K, V>(&self, method: Method, parameters: P) -> Result<serde_json::Value>
     where
-        P: IntoIterator + Send,
+        P: IntoIterator + Send + std::fmt::Debug,
         K: AsRef<str>,
         V: AsRef<str>,
         P::Item: Borrow<(K, V)>,
@@ -50,6 +55,7 @@ impl<'a> SlackClient<'a> {
         Ok(serde_json::from_str(&response)?)
     }
 
+    #[instrument]
     pub async fn members_of_channel(&mut self, channel: &str) -> Result<Vec<String>> {
         let mut parameters = HashMap::new();
         parameters.insert("channel", channel);
@@ -110,6 +116,7 @@ impl<'a> SlackClient<'a> {
         }
     }
 
+    #[instrument]
     pub async fn post_message(&self, channel_id: &str, blocks: &Value) -> Result<()> {
         let mut parameters = HashMap::new();
         parameters.insert("channel", channel_id);

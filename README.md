@@ -23,6 +23,8 @@ The Slack API is used to send Block Kit messages and handle user interaction.
 - [ ] Application 
     - [ ] Update pairing algo to prevent duplicate pairings
     - [ ] Update intro_launch endpoint to accept arguments for group size
+    - [ ] implement a "nobody responded" interaction handling
+    - [ ] implement a random group leader picker ("take point on making this meeting happen")
     - [ ] start a requested feature list. potentially include block lists, meeting schedule adjuster, multiple midpoint checkins,
     - [ ] Implement tracing 
     - [ ] set up jaegar / frontend for logs 

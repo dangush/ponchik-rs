@@ -3,8 +3,12 @@ use vercel_runtime::{run, Body, Error,
     Request, Response, StatusCode,
 };
 
+use tracing::instrument;
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    tracing_subscriber::fmt::init();
+
     run(handler).await
 }
 
@@ -19,6 +23,7 @@ pub struct APIError {
     pub code: &'static str,
 }
 
+#[instrument]
 pub async fn handler(_req: Request) -> Result<Response<Body>, Error> {
 
     let _ = ponchik::send_midpoint_checkins().await;

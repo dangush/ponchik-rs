@@ -1,6 +1,9 @@
 use rand::{prelude::StdRng, seq::SliceRandom, SeedableRng};
+use tracing_subscriber;
+use tracing::{event, span, Level, instrument};
 
-pub fn random_partition<T: Clone>(xs: &mut [T], size: usize) -> Vec<Vec<T>> {
+#[instrument]
+pub fn random_partition<T: Clone + std::fmt::Debug>(xs: &mut [T], size: usize) -> Vec<Vec<T>> {
     if xs.len() < 1 || size < 1 {
         return vec![xs.into()];
     }

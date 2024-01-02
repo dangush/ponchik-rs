@@ -6,6 +6,9 @@ use error::Result;
 use std::env;
 use chrono::{Local, Date, Utc};
 
+use tracing_subscriber;
+use tracing::{event, span, Level, instrument};
+
 mod client;
 mod error;
 mod method;
@@ -16,6 +19,7 @@ pub mod db;
 
 use crate::partition::random_partition;
 
+#[instrument]
 pub async fn set_up_meetings() -> Result<()> {
     dotenv::dotenv().ok();
     
@@ -29,6 +33,7 @@ pub async fn set_up_meetings() -> Result<()> {
     let db_pool = db::db_init().await.unwrap();
 
     for partition in user_partitions {        
+        event!(Level::INFO, "{:?}", partition);
         // Convert userid's into full names
         // let identity_vec: Vec<serde_json::Value> = partition
         //                                 .iter()
@@ -60,6 +65,7 @@ pub async fn set_up_meetings() -> Result<()> {
     Ok(())
 }
 
+#[instrument]
 pub async fn send_midpoint_checkins() -> Result<()> {
     dotenv::dotenv().ok();
 
@@ -73,6 +79,26 @@ pub async fn send_midpoint_checkins() -> Result<()> {
     let blocks: serde_json::Value = serde_json::from_str(data::message_blocks::MIDPOINT_BLOCK)?;
 
     for pair in open_pairs {
+        client.post_message(&pair.group_channel_id, &blocks).await?;
+    }
+
+    Ok(())
+}
+
+#[instrument]
+pub async fn send_closing_survey() -> Result<()> {
+    dotenv::dotenv().ok();
+
+    // TODO: fix error handling
+    let db_pool = db::db_init().await.unwrap();
+    let pairs_to_close = db::db_find_all_status2(&db_pool, db::MeetingStatus::Open, db::MeetingStatus::Scheduled).await.unwrap();
+
+    let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
+    let client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
+
+    let blocks: serde_json::Value = serde_json::from_str(data::message_blocks::CLOSING_BLOCK)?;
+
+    for pair in pairs_to_close {
         client.post_message(&pair.group_channel_id, &blocks).await?;
     }
 

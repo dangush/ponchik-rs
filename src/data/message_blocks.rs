@@ -28,7 +28,7 @@ pub const MIDPOINT_BLOCK: &str = r#"
                     "text": "✅ Yes!",
                     "emoji": true
                 },
-                "value": "yes"
+                "value": "mid_yes"
             },
             {
                 "type": "button",
@@ -37,7 +37,7 @@ pub const MIDPOINT_BLOCK: &str = r#"
                     "text": "📅 It's scheduled",
                     "emoji": true
                 },
-                "value": "scheduled"
+                "value": "mid_scheduled"
             },
             {
                 "type": "button",
@@ -46,7 +46,41 @@ pub const MIDPOINT_BLOCK: &str = r#"
                     "text": "💤 Not yet..",
                     "emoji": true
                 },
-                "value": "no"
+                "value": "mid_no"
+            }
+        ]
+    }
+]"#;
+
+pub const CLOSING_BLOCK: &str = r#"
+[
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "Checking in! Did you guys get a chance to connect?"
+        }
+    },
+    {
+        "type": "actions",
+        "elements": [
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "✅ Yes!",
+                    "emoji": true
+                },
+                "value": "close_yes"
+            },
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "No 😔",
+                    "emoji": true
+                },
+                "value": "close_no"
             }
         ]
     }

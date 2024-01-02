@@ -8,8 +8,13 @@ use vercel_runtime::{
 use reqwest;
 use std::collections::HashMap;
 
+use tracing_subscriber;
+use tracing::{event, span, Level, instrument};
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    tracing_subscriber::fmt::init();
+
     run(handler).await
 }
 
@@ -24,6 +29,7 @@ pub struct APIError {
     pub code: &'static str,
 }
 
+#[instrument]
 pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
 
     let payload = req.payload::<Payload>();
@@ -32,7 +38,7 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
         Ok(Some(payload)) => {
             match serde_json::from_str::<Value>(&payload.payload) {
                 Ok(json_value) => {
-                    println!("Received JSON: {:?}", json_value);
+                    event!(Level::DEBUG, "Received JSON: {:?}", json_value);
                     
                     if let Some(response_url) = json_value.get("response_url") {
                         println!("Response url: {}", response_url);
@@ -46,10 +52,9 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
                             map.insert("replace_original", String::from("true"));
 
                             match action_val.as_str().unwrap() {
-                                "yes" => {
+                                "mid_yes" => {
                                     map.insert("text", 
-                                    format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n
-                                    ✅ <@{}> said that you've met!", user_id));
+                                    format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n✅ <@{}> said that you've met!", user_id));
                                     
 
                                     let pool = db::db_init().await?;
@@ -60,10 +65,9 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
                                         .send()
                                         .await?;        
                                 },
-                                "no" => {
+                                "mid_no" => {
                                     map.insert("text", 
-                                    format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n
-                                    *:C* <@{}> said that you have not scheduled yet.", user_id));
+                                    format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n*:C* <@{}> said that you have not scheduled yet.", user_id));
         
                                     // TODO: not sure what to make of this status yet
 
@@ -73,13 +77,39 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
                                         .await?;        
 
                                 },
-                                "scheduled" => {
+                                "mid_scheduled" => {
                                     map.insert("text", 
-                                    format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n 
-                                    📅 <@{}> said that your meeting is scheduled!", user_id));
+                                    format!("It's time for a midpoint checkin!\n\n *Did you get a chance to meet?*\n\n📅 <@{}> said that your meeting is scheduled!", user_id));
         
                                     let pool = db::db_init().await?;
                                     db::db_update_status(&pool, channel_id.to_string(), db::MeetingStatus::Scheduled).await?;
+
+                                    let _res = reqwest::Client::new().post(response_url.as_str().unwrap())
+                                        .json(&map)
+                                        .send()
+                                        .await?;  
+
+                                },
+                                "close_yes" => {
+                                    map.insert("text", 
+                                    format!("Checking in! Did you guys get a chance to connect?\n\n🥳<@{}> said that you met! Great!", user_id));
+        
+                                    let pool = db::db_init().await?;
+                                    db::db_update_status(&pool, channel_id.to_string(), db::MeetingStatus::Closed(db::FinalStatus::Met)).await?;
+
+                                    let _res = reqwest::Client::new().post(response_url.as_str().unwrap())
+                                        .json(&map)
+                                        .send()
+                                        .await?;  
+
+                                },
+                                "close_no" => {
+                                    map.insert("text", 
+                                    format!("Checking in! Did you guys get a chance to connect?\n\n😶‍🌫️<@{}> said no. Better luck next time!", user_id));
+                                    
+                                    // TODO: Check if it was previously scheduled or not
+                                    let pool = db::db_init().await?;
+                                    db::db_update_status(&pool, channel_id.to_string(), db::MeetingStatus::Closed(db::FinalStatus::Fail)).await?;
 
                                     let _res = reqwest::Client::new().post(response_url.as_str().unwrap())
                                         .json(&map)
