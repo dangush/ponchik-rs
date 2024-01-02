@@ -13,21 +13,22 @@ Pairings and their statuses are recorded in a PostgreSQL database using the sqlx
 The Slack API is used to send Block Kit messages and handle user interaction.
 
 ## Todos
-- [ ] Backend
+- [x] Backend
     - [x] Ensure sqlx and postgres works in the vercel runtime
     - [x] Write pairings to database at intros generation
     - [x] Read active pairings from db and send midpoint checkins
     - [x] update db from user interactions
-    - [ ] update db at pair close
+    - [x] update db at pair close
     - [x] if sqlx and postgresql doesnt work then im either turning this into some middlewware with a js implementation powering the db connection, or writing a rust database library for google sheets
 - [ ] Application 
+    - [ ] Add instrumentation (wip)
+    - [ ] set up jaegar / frontend for logs 
+    - [ ] clean up user interaction handling so that the stupid (edit) symbol doesn't appear. [reference](https://stackoverflow.com/questions/42793220/how-to-replace-the-buttons-attachment-only-w-slack-interactive-buttons-respon)
     - [ ] Update pairing algo to prevent duplicate pairings
     - [ ] Update intro_launch endpoint to accept arguments for group size
     - [ ] implement a "nobody responded" interaction handling
     - [ ] implement a random group leader picker ("take point on making this meeting happen")
     - [ ] start a requested feature list. potentially include block lists, meeting schedule adjuster, multiple midpoint checkins,
-    - [ ] Implement tracing 
-    - [ ] set up jaegar / frontend for logs 
 - [ ] Front end 
     - [ ] Create slack-authenticated frontend which displays db contents and can be used to interact with app
 - [ ] Misc
