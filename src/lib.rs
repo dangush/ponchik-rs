@@ -9,7 +9,7 @@ use chrono::{Local, Date, Utc};
 use tracing_subscriber;
 use tracing::{event, span, Level, instrument};
 
-mod client;
+pub mod client;
 mod error;
 mod method;
 mod partition;
@@ -31,6 +31,7 @@ pub async fn set_up_meetings() -> Result<()> {
 
     // TODO: fix error handling
     let db_pool = db::db_init().await.unwrap();
+    let cur_round = db::db_find_max_round(&db_pool).await.unwrap() + 1;
 
     for partition in user_partitions {        
         event!(Level::INFO, "{:?}", partition);
@@ -51,7 +52,7 @@ pub async fn set_up_meetings() -> Result<()> {
 
         let pairing = db::Pairing {
             group_channel_id: channel_id.clone(),
-            date_of_intro: Local::now().to_string(),
+            round: cur_round,
             meeting_status: db::MeetingStatus::Open,
             names: partition
         };

@@ -9,7 +9,7 @@ use tracing::{event, span, Level, instrument};
 #[derive(Debug, FromRow)]
 pub struct Pairing {
 	pub group_channel_id: String,
-	pub date_of_intro: String,
+	pub round: i32,
     pub meeting_status: MeetingStatus,
     pub names: Vec<String>
 }
@@ -87,13 +87,13 @@ pub async fn db_init() -> Result<sqlx::Pool<Postgres>, sqlx::Error> {
 
 #[instrument]
 pub async fn db_insert_list(pool: &sqlx::Pool<Postgres>, pairings: Vec<Pairing>) -> Result<(), sqlx::Error> {
-    // let test_pair = Pairing { group_channel_id: "U2123".to_string(), date_of_intro: "19-2-23".to_string(), meeting_status: MeetingStatus::Open, names: vec!["dan".to_string(), "gurnoor".to_string()] };
+    // let test_pair = Pairing { group_channel_id: "U2123".to_string(), round: 1_i32.to_string(), meeting_status: MeetingStatus::Open, names: vec!["dan".to_string(), "gurnoor".to_string()] };
     
     for pairing in pairings {
-        sqlx::query("INSERT INTO ponchiks (group_channel_id, meeting_status, date_of_intro, names) VALUES ($1, $2, $3, $4)")
+        sqlx::query("INSERT INTO ponchiks (group_channel_id, meeting_status, round, names) VALUES ($1, $2, $3, $4)")
         .bind(pairing.group_channel_id)
         .bind(pairing.meeting_status)
-        .bind(pairing.date_of_intro)
+        .bind(pairing.round)
         .bind(pairing.names) // sus unwrap
         .execute(pool)
         .await?;
@@ -105,12 +105,12 @@ pub async fn db_insert_list(pool: &sqlx::Pool<Postgres>, pairings: Vec<Pairing>)
 
 #[instrument]
 pub async fn db_insert_single(pool: &sqlx::Pool<Postgres>, pairing: Pairing) -> Result<(), sqlx::Error> {
-    // let test_pair = Pairing { group_channel_id: "U2123".to_string(), date_of_intro: "19-2-23".to_string(), meeting_status: MeetingStatus::Open, names: vec!["dan".to_string(), "gurnoor".to_string()] };
+    // let test_pair = Pairing { group_channel_id: "U2123".to_string(), round: 1_i32.to_string(), meeting_status: MeetingStatus::Open, names: vec!["dan".to_string(), "gurnoor".to_string()] };
 
-    sqlx::query("INSERT INTO ponchiks (group_channel_id, meeting_status, date_of_intro, names) VALUES ($1, $2, $3, $4)")
+    sqlx::query("INSERT INTO ponchiks (group_channel_id, meeting_status, round, names) VALUES ($1, $2, $3, $4)")
         .bind(pairing.group_channel_id)
         .bind(pairing.meeting_status)
-        .bind(pairing.date_of_intro)
+        .bind(pairing.round)
         .bind(pairing.names) // sus unwrap
         .execute(pool)
         .await?;
@@ -130,6 +130,19 @@ pub async fn db_read_by_groupid(pool: &sqlx::Pool<Postgres>, channel_id: String)
 }
 
 #[instrument]
+pub async fn db_find_max_round(pool: &sqlx::Pool<sqlx::Postgres>) -> Result<i32, sqlx::Error> {
+    let select_query = sqlx::query(
+        "SELECT MAX(round)::INTEGER FROM ponchiks"
+    );
+
+    let result = select_query.fetch_one(pool).await?;
+    let val = result.get::<Option<i32>, &str>("max").unwrap_or(0);
+    
+    // If result is None, the db is empty and 0 should be returned.
+    Ok(val)
+}
+
+#[instrument]
 pub async fn db_find_all_status(pool: &sqlx::Pool<Postgres>, status: MeetingStatus) -> Result<Vec<Pairing>, sqlx::Error> {
     let select_query = 
         sqlx::query_as::<_, Pairing>("SELECT * FROM ponchiks WHERE meeting_status = ($1)")
@@ -146,6 +159,16 @@ pub async fn db_find_all_status2(pool: &sqlx::Pool<Postgres>, status1: MeetingSt
         sqlx::query_as::<_, Pairing>("SELECT * FROM ponchiks WHERE meeting_status = ($1) OR meeting_status = ($2)")
         .bind(status1)
         .bind(status2);
+
+    let pairings: Vec<Pairing> = select_query.fetch_all(pool).await?;
+
+    Ok(pairings)
+}
+
+pub async fn db_find_all_round(pool: &sqlx::Pool<Postgres>, round: i16) -> Result<Vec<Pairing>, sqlx::Error> {
+    let select_query = 
+        sqlx::query_as::<_, Pairing>("SELECT * FROM ponchiks WHERE round = ($1)")
+        .bind(round);
 
     let pairings: Vec<Pairing> = select_query.fetch_all(pool).await?;
 

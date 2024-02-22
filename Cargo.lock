@@ -2003,6 +2003,7 @@ dependencies = [
  "indexmap 2.1.0",
  "log",
  "memchr",
+ "native-tls",
  "once_cell",
  "paste",
  "percent-encoding 2.3.0",
