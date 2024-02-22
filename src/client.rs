@@ -66,7 +66,9 @@ impl<'a> SlackClient<'a> {
         // TODO: avoid these clone() calls
         // TODO: figure out a way to handle userid mapping that doesn't require burst api calls every time. Maybe store in DB
         let mut userid_array: Vec<String> = response["members"].as_array().unwrap().iter().map(|v| v.as_str().unwrap().to_string()).collect();
-        userid_array.retain(|user_id| user_id != &env::var("BOT_ID").unwrap());
+        
+        // todo: build proper allow/block listing
+        userid_array.retain(|user_id| user_id != &env::var("BOT_ID").unwrap() && user_id != "U800FL11B");
 
         // for userid in userid_array.clone() {
         //     let user_name = self.userid_to_identity(&userid).await;

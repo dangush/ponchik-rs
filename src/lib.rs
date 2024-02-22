@@ -58,7 +58,7 @@ pub async fn set_up_meetings() -> Result<()> {
         };
         println!("{:?}", pairing);
         // TODO: fix error handling
-        db::db_insert_single(&db_pool, pairing).await;
+        let _ = db::db_insert_single(&db_pool, pairing).await;
 
         client.post_message(&channel_id, &blocks).await?;
     }
@@ -105,3 +105,28 @@ pub async fn send_closing_survey() -> Result<()> {
 
     Ok(())
 }
+
+pub async fn test_partition_building() -> Result<()> {
+    dotenv::dotenv().ok();
+    
+    let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
+    let mut client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
+
+    let mut users = client.members_of_channel(env::var("CHANNEL_ID").unwrap().as_str()).await?;
+    let user_partitions = random_partition(&mut users, 4);
+
+    for partition in user_partitions {        
+        event!(Level::INFO, "{:?}", partition);
+        // Convert userid's into full names
+        let mut identity_vec: Vec<String> = vec![];
+
+        for user_id in partition {
+            identity_vec.push(client.userid_to_identity(&user_id).await);
+        }        
+                                     
+        println!("{:?}", identity_vec);
+    }
+
+    Ok(())
+}
+
