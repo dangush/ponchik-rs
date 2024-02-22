@@ -13,7 +13,6 @@ pub mod client;
 mod error;
 mod method;
 mod partition;
-mod sheetsdb;
 mod data;
 pub mod db;
 
