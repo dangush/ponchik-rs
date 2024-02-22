@@ -3,7 +3,7 @@ use tracing::instrument;
 
 #[instrument]
 pub fn random_partition<T: Clone + std::fmt::Debug>(xs: &mut [T], size: usize) -> Vec<Vec<T>> {
-    if xs.len() < 1 || size < 1 {
+    if xs.is_empty() || size < 1 {
         return vec![xs.into()];
     }
 

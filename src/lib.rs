@@ -18,7 +18,7 @@ use crate::partition::random_partition;
 pub async fn set_up_meetings(group_size: u8) -> Result<()> {
     dotenv::dotenv().ok();
     
-    let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
+    let oauth_token: String = env::var("OAUTH_TOKEN").unwrap();
     let mut client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
 
     let mut users = client.members_of_channel(env::var("CHANNEL_ID").unwrap().as_str()).await?;
@@ -89,7 +89,7 @@ pub async fn send_closing_survey() -> Result<()> {
     let db_pool = db::db_init().await.unwrap();
     let pairs_to_close = db::db_find_all_status2(&db_pool, db::MeetingStatus::Open, db::MeetingStatus::Scheduled).await.unwrap();
 
-    let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
+    let oauth_token: String = env::var("OAUTH_TOKEN").unwrap();
     let client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
 
     let blocks: serde_json::Value = serde_json::from_str(data::message_blocks::CLOSING_BLOCK)?;
@@ -104,7 +104,7 @@ pub async fn send_closing_survey() -> Result<()> {
 pub async fn test_partition_building() -> Result<Vec<Vec<String>>> {
     dotenv::dotenv().ok();
     
-    let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
+    let oauth_token: String = env::var("OAUTH_TOKEN").unwrap();
     let mut client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
 
     let mut users = client.members_of_channel(env::var("CHANNEL_ID").unwrap().as_str()).await?;

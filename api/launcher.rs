@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
-use tracing_subscriber;
+
 use vercel_runtime::{
     http::bad_request, run, Body, Error, Request, RequestPayloadExt, Response, StatusCode,
 };
@@ -80,7 +80,7 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
 
     dotenv::dotenv().ok();
     
-    if String::from(env::var("ADMIN_KEY").unwrap()) != payload.api_key {
+    if env::var("ADMIN_KEY").unwrap() != payload.api_key {
         // Acknowledge user interaction
         return bad_request(APIError {
             message: "Missing api key",
@@ -97,10 +97,7 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
     // TODO add error handling 
     let return_json = match action {
         Action::LaunchIntros => {
-            let group_size = match payload.group_size {
-                Some(group_size) => group_size,
-                None => 2
-            };
+            let group_size = payload.group_size.unwrap_or(2);
             let _ = ponchik::set_up_meetings(group_size).await;
             
             serde_json::json!({"message": "intros sent successfully"})
