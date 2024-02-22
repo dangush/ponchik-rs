@@ -1,4 +1,5 @@
 
+use data::user_profile;
 use serde_json::json;
 
 use client::SlackClient;
@@ -105,7 +106,7 @@ pub async fn send_closing_survey() -> Result<()> {
     Ok(())
 }
 
-pub async fn test_partition_building() -> Result<()> {
+pub async fn test_partition_building() -> Result<Vec<Vec<String>>> {
     dotenv::dotenv().ok();
     
     let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
@@ -113,6 +114,7 @@ pub async fn test_partition_building() -> Result<()> {
 
     let mut users = client.members_of_channel(env::var("CHANNEL_ID").unwrap().as_str()).await?;
     let user_partitions = random_partition(&mut users, 4);
+    let mut user_partitions_identified: Vec<Vec<String>> = vec![];
 
     for partition in user_partitions {        
         event!(Level::INFO, "{:?}", partition);
@@ -124,8 +126,9 @@ pub async fn test_partition_building() -> Result<()> {
         }        
                                      
         println!("{:?}", identity_vec);
+        user_partitions_identified.push(identity_vec);
     }
 
-    Ok(())
+    Ok(user_partitions_identified)
 }
 
