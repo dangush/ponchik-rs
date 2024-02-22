@@ -1,6 +1,5 @@
 use rand::{prelude::StdRng, seq::SliceRandom, SeedableRng};
-use tracing_subscriber;
-use tracing::{event, span, Level, instrument};
+use tracing::instrument;
 
 #[instrument]
 pub fn random_partition<T: Clone + std::fmt::Debug>(xs: &mut [T], size: usize) -> Vec<Vec<T>> {

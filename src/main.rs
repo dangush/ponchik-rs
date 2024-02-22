@@ -18,7 +18,7 @@ async fn main() {
     match args[1].as_str() {
         "new-pairings" => {
             // TODO: add size of group / number of groups argument
-            match set_up_meetings().await {
+            match set_up_meetings(2).await {
                 Err(e) => println!("Setting up meetings failed: {:?}", e),
                 _ => ()
             }

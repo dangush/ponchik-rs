@@ -1,14 +1,9 @@
 
-use data::user_profile;
-use serde_json::json;
-
 use client::SlackClient;
 use error::Result;
 use std::env;
-use chrono::{Local, Date, Utc};
 
-use tracing_subscriber;
-use tracing::{event, span, Level, instrument};
+use tracing::{event, Level, instrument};
 
 pub mod client;
 mod error;
@@ -20,14 +15,14 @@ pub mod db;
 use crate::partition::random_partition;
 
 #[instrument]
-pub async fn set_up_meetings() -> Result<()> {
+pub async fn set_up_meetings(group_size: u8) -> Result<()> {
     dotenv::dotenv().ok();
     
     let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
     let mut client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
 
     let mut users = client.members_of_channel(env::var("CHANNEL_ID").unwrap().as_str()).await?;
-    let user_partitions = random_partition(&mut users, 2);
+    let user_partitions = random_partition(&mut users, group_size as usize);
 
     // TODO: fix error handling
     let db_pool = db::db_init().await.unwrap();
@@ -74,7 +69,7 @@ pub async fn send_midpoint_checkins() -> Result<()> {
     let db_pool = db::db_init().await.unwrap();
     let open_pairs = db::db_find_all_status(&db_pool, db::MeetingStatus::Open).await.unwrap();
 
-    let oauth_token: String = String::from(env::var("OAUTH_TOKEN").unwrap());
+    let oauth_token: String = env::var("OAUTH_TOKEN").unwrap();
     let client: SlackClient<'_> = SlackClient::from_key(&oauth_token);
 
     let blocks: serde_json::Value = serde_json::from_str(data::message_blocks::MIDPOINT_BLOCK)?;

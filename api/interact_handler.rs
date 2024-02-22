@@ -3,7 +3,7 @@ use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
-use tracing::{event, instrument, span, Level};
+use tracing::{event, instrument, Level};
 use tracing_subscriber;
 use vercel_runtime::{
     http::bad_request, run, Body, Error, Request, RequestPayloadExt, Response, StatusCode,

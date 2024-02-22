@@ -1,16 +1,12 @@
-use ponchik::{db, client::*};
-use reqwest;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::collections::HashMap;
-use tracing::{event, instrument, span, Level};
+use tracing::instrument;
 use tracing_subscriber;
 use vercel_runtime::{
     http::bad_request, run, Body, Error, Request, RequestPayloadExt, Response, StatusCode,
 };
 use core::fmt;
 use std::env;
-use stopwatch::{Stopwatch};
+use stopwatch::Stopwatch;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -23,6 +19,7 @@ async fn main() -> Result<(), Error> {
 struct Payload {
     action: String,
     api_key: String,
+    group_size: Option<u8>
 }
 
 enum Action {
@@ -100,7 +97,11 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
     // TODO add error handling 
     let return_json = match action {
         Action::LaunchIntros => {
-            let _ = ponchik::set_up_meetings().await;
+            let group_size = match payload.group_size {
+                Some(group_size) => group_size,
+                None => 2
+            };
+            let _ = ponchik::set_up_meetings(group_size).await;
             
             serde_json::json!({"message": "intros sent successfully"})
         },
@@ -133,8 +134,7 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
             println!("{:?}", result);
           
             serde_json::json!({"ponchiks": result, "time": sw.elapsed_ms()})
-        },
-        _ => unimplemented!()
+        }
     };
 
     // Acknowledge user interaction

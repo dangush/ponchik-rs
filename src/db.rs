@@ -1,10 +1,9 @@
-use sqlx::postgres::{PgPoolOptions, PgRow};
+use sqlx::postgres::PgPoolOptions;
 use sqlx::{FromRow, Row};
 use sqlx::{Encode, Decode, Postgres};
 use std::env;
 
-use tracing_subscriber;
-use tracing::{event, span, Level, instrument};
+use tracing::instrument;
 
 #[derive(Debug, FromRow)]
 pub struct Pairing {

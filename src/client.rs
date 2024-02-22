@@ -7,8 +7,7 @@ use std::env;
 use crate::error::{Error, Result};
 use crate::method::Method;
 
-use tracing_subscriber;
-use tracing::{event, span, Level, instrument};
+use tracing::instrument;
 
 // TODO: Get rid of user_map
 // TODO: Actually nevermind lmao get rid of this entire thing, I never reuse my http connections anyway
@@ -91,9 +90,9 @@ impl<'a> SlackClient<'a> {
         let response = self.send(Method::UserIdentity, parameters).await.unwrap();
 
         if matches!(response["ok"], Value::Bool(true)) {
-            return response["profile"]["real_name"].to_string();
+            response["profile"]["real_name"].to_string()
         } else {
-            return String::from("");
+            String::from("")
         }
     }
 
